@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>審査員運みくじ</title>
+
+<style>
+
+body{
+margin:0;
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+background:linear-gradient(135deg,#111,#222);
+color:white;
+text-align:center;
+padding:40px;
+}
+
+h1{
+font-size:40px;
+}
+
+.card{
+background:rgba(255,255,255,0.05);
+padding:40px;
+border-radius:20px;
+max-width:600px;
+margin:auto;
+}
+
+button{
+margin-top:20px;
+padding:12px 30px;
+border:none;
+border-radius:25px;
+background:#ff3b30;
+color:white;
+font-size:16px;
+cursor:pointer;
+}
+
+.result{
+font-size:32px;
+margin-top:20px;
+}
+
+.advice{
+margin-top:10px;
+color:#ccc;
+}
+
+.share{
+margin-top:20px;
+}
+
+.simulator{
+margin-top:40px;
+}
+
+input{
+padding:10px;
+margin:5px;
+border-radius:10px;
+border:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>審査員運みくじ</h1>
+
+<p>段位を選んで運勢を引こう</p>
+
+<select id="rank">
+<option>初段</option>
+<option>弐段</option>
+<option>参段</option>
+<option>四段</option>
+<option>五段</option>
+</select>
+
+<br>
+
+<button onclick="drawOmikuji()">みくじを引く</button>
+
+<div class="result" id="result"></div>
+<div id="rate"></div>
+<div class="advice" id="advice"></div>
+
+<div class="share">
+
+<button onclick="shareLine()">LINEシェア</button>
+<button onclick="shareInstagram()">Instagram用コピー</button>
+
+</div>
+
+</div>
+
+<div class="card simulator">
+
+<h2>合格率シミュレーター</h2>
+
+<p>的中率（%）</p>
+<input type="number" id="hit" placeholder="例:60">
+
+<p>緊張度（1〜10）</p>
+<input type="number" id="stress" placeholder="例:5">
+
+<br>
+
+<button onclick="simulate()">合格率計算</button>
+
+<div id="simResult"></div>
+
+</div>
+
+<script>
+
+const fortunes=[
+"大吉","吉","中吉","小吉","末吉","凶"
+]
+
+const adviceList=[
+"会を長く保つことを意識しましょう",
+"離れを自然に出すことが大事です",
+"足踏みと胴造りを丁寧に",
+"呼吸を整えると射が安定します",
+"今日は基本に忠実な射を心がけましょう",
+"審査員は落ち着いた射を見ています"
+]
+
+function drawOmikuji(){
+
+const fortune=fortunes[Math.floor(Math.random()*fortunes.length)]
+const rate=Math.floor(Math.random()*60)+40
+const advice=adviceList[Math.floor(Math.random()*adviceList.length)]
+
+document.getElementById("result").innerText=fortune
+document.getElementById("rate").innerText="合格期待度 "+rate+"%"
+document.getElementById("advice").innerText="AIアドバイス: "+advice
+
+}
+
+function shareLine(){
+
+const text="審査員運みくじを引いてみた！"
+const url=encodeURIComponent(window.location.href)
+
+window.open("https://social-plugins.line.me/lineit/share?url="+url+"&text="+text)
+
+}
+
+function shareInstagram(){
+
+const text="審査員運みくじ結果をシェア！"
+
+navigator.clipboard.writeText(text)
+
+alert("Instagram用テキストをコピーしました")
+
+}
+
+function simulate(){
+
+const hit=document.getElementById("hit").value
+const stress=document.getElementById("stress").value
+
+if(!hit||!stress){
+alert("数値を入力してください")
+return
+}
+
+let score=hit*0.7+(10-stress)*3
+
+if(score>100)score=100
+
+document.getElementById("simResult").innerText=
+"シミュレーション合格率: "+Math.floor(score)+"%"
+
+}
+
+</script>
+
+</body>
+</html>
