@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>審査員運みくじ</title>
+
+<style>
+
+body{
+margin:0;
+font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+background:linear-gradient(135deg,#111,#222);
+color:white;
+text-align:center;
+padding:40px;
+}
+
+h1{
+font-size:40px;
+}
+
+.card{
+background:rgba(255,255,255,0.05);
+padding:40px;
+border-radius:20px;
+max-width:600px;
+margin:auto;
+}
+
+button{
+margin-top:15px;
+padding:12px 25px;
+border:none;
+border-radius:25px;
+background:#ff3b30;
+color:white;
+font-size:16px;
+cursor:pointer;
+}
+
+.result{
+font-size:32px;
+margin-top:20px;
+}
+
+.share button{
+background:#007aff;
+}
+
+.ranking{
+margin-top:30px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+
+<h1>審査員運みくじ</h1>
+
+<p>今日の審査員運を占う</p>
+
+<button onclick="draw()">おみくじを引く</button>
+
+<div class="result" id="result"></div>
+
+<div id="rate"></div>
+
+<div id="judge"></div>
+
+<div id="advice"></div>
+
+<div id="aruaru"></div>
+
+<div class="share">
+
+<button onclick="shareLine()">LINEシェア</button>
+
+<button onclick="shareX()">Xでシェア</button>
+
+</div>
+
+<div class="ranking">
+
+<h2>結果ランキング</h2>
+
+<div id="ranking"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const fortunes=[
+"大吉","吉","中吉","小吉","末吉","凶"
+]
+
+const judges=[
+"優しい審査員",
+"射形ガチ勢審査員",
+"的中重視審査員",
+"超厳格審査員",
+"ベテラン審査員"
+]
+
+const advice=[
+"会を長く保とう",
+"離れを自然に出そう",
+"呼吸を整えると射が安定する",
+"足踏みを丁寧に",
+"基本動作を意識"
+]
+
+const aruaru=[
+"審査員が急にメモを取り始める",
+"射位に入った瞬間から見られている",
+"離れの瞬間に審査員がうなずく",
+"会が短いとすぐバレる",
+"審査員が微妙な表情"
+]
+
+function getCookie(name){
+
+let value="; "+document.cookie
+
+let parts=value.split("; "+name+"=")
+
+if(parts.length===2)
+
+return parts.pop().split(";").shift()
+
+}
+
+function setCookie(name,value){
+
+let d=new Date()
+
+d.setTime(d.getTime()+86400000)
+
+document.cookie=name+"="+value+";expires="+d.toUTCString()+";path=/"
+
+}
+
+function draw(){
+
+if(getCookie("omikuji")){
+
+alert("今日はもう引きました")
+
+return
+
+}
+
+const fortune=fortunes[Math.floor(Math.random()*fortunes.length)]
+
+const judge=judges[Math.floor(Math.random()*judges.length)]
+
+const adv=advice[Math.floor(Math.random()*advice.length)]
+
+const aru=aruaru[Math.floor(Math.random()*aruaru.length)]
+
+const rate=Math.floor(Math.random()*60)+40
+
+document.getElementById("result").innerText=fortune
+
+document.getElementById("rate").innerText="合格期待度 "+rate+"%"
+
+document.getElementById("judge").innerText="今日の審査員: "+judge
+
+document.getElementById("advice").innerText="AIアドバイス: "+adv
+
+document.getElementById("aruaru").innerText="審査あるある: "+aru
+
+setCookie("omikuji","done")
+
+saveRanking(fortune)
+
+}
+
+function saveRanking(result){
+
+let data=localStorage.getItem("ranking")
+
+if(!data){
+
+data={
+
+"大吉":0,
+
+"吉":0,
+
+"中吉":0,
+
+"小吉":0,
+
+"末吉":0,
+
+"凶":0
+
+}
+
+}else{
+
+data=JSON.parse(data)
+
+}
+
+data[result]++
+
+localStorage.setItem("ranking",JSON.stringify(data))
+
+showRanking()
+
+}
+
+function showRanking(){
+
+let data=localStorage.getItem("ranking")
+
+if(!data) return
+
+data=JSON.parse(data)
+
+let html=""
+
+for(let key in data){
+
+html+=key+" : "+data[key]+"回<br>"
+
+}
+
+document.getElementById("ranking").innerHTML=html
+
+}
+
+function shareLine(){
+
+const url=encodeURIComponent(location.href)
+
+window.open("https://social-plugins.line.me/lineit/share?url="+url)
+
+}
+
+function shareX(){
+
+const text=encodeURIComponent("審査員運みくじを引いてみた！")
+
+const url=encodeURIComponent(location.href)
+
+window.open("https://twitter.com/intent/tweet?text="+text+"&url="+url)
+
+}
+
+showRanking()
+
+</script>
+
+</body>
+
+</html>
