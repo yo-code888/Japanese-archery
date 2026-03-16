@@ -25,7 +25,7 @@ padding:40px;
 background:rgba(255,255,255,0.05);
 padding:40px;
 border-radius:20px;
-max-width:600px;
+max-width:650px;
 margin:auto;
 }
 
@@ -40,25 +40,29 @@ font-size:16px;
 cursor:pointer;
 }
 
-#shake{
-font-size:60px;
+select{
+padding:10px;
+border-radius:10px;
+margin-top:10px;
+}
+
+#box{
+font-size:70px;
 margin-top:20px;
 display:none;
-animation:shake 0.5s infinite;
+animation:shake 0.4s infinite;
 }
 
 @keyframes shake{
-
-0%{transform:rotate(0deg)}
-25%{transform:rotate(5deg)}
-50%{transform:rotate(-5deg)}
-75%{transform:rotate(5deg)}
-100%{transform:rotate(0deg)}
-
+0%{transform:rotate(0)}
+25%{transform:rotate(6deg)}
+50%{transform:rotate(-6deg)}
+75%{transform:rotate(6deg)}
+100%{transform:rotate(0)}
 }
 
 .result{
-font-size:32px;
+font-size:34px;
 margin-top:20px;
 }
 
@@ -83,9 +87,22 @@ margin:5px;
 
 <p>今日の審査員運を占う</p>
 
-<button onclick="startOmikuji()">おみくじを引く</button>
+<select id="dan">
 
-<div id="shake">🎴</div>
+<option>無指定・級</option>
+<option>初段</option>
+<option>弐段</option>
+<option>参段</option>
+<option>四段</option>
+<option>五段</option>
+
+</select>
+
+<br>
+
+<button onclick="start()">おみくじを引く</button>
+
+<div id="box">🎴</div>
 
 <button id="openBtn" class="hidden" onclick="draw()">結果を見る</button>
 
@@ -105,17 +122,17 @@ margin:5px;
 
 <button onclick="shareLine()">LINEシェア</button>
 
-<button onclick="generateImage()">結果画像を保存</button>
+<button onclick="generateImage()">結果画像保存</button>
+
+<button onclick="copyText()">Instagram用コピー</button>
 
 </div>
-
-<div class="ranking">
 
 <h2>みんなの結果ランキング</h2>
 
 <div id="ranking"></div>
 
-</div>
+<h3 id="players"></h3>
 
 </div>
 
@@ -133,11 +150,13 @@ const judges=[
 
 const advice=[
 "会を長く保とう",
-"離れを自然に出そう",
-"呼吸を整えると射が安定する",
+"呼吸を整える",
+"離れを自然に出す",
 "足踏みを丁寧に",
 "基本動作を意識"
 ]
+
+let drawn=false
 
 function getCookie(name){
 
@@ -145,7 +164,6 @@ let value="; "+document.cookie
 let parts=value.split("; "+name+"=")
 
 if(parts.length===2)
-
 return parts.pop().split(";").shift()
 
 }
@@ -153,26 +171,28 @@ return parts.pop().split(";").shift()
 function setCookie(name,value){
 
 let d=new Date()
+
 d.setTime(d.getTime()+86400000)
 
 document.cookie=name+"="+value+";expires="+d.toUTCString()+";path=/"
 
 }
 
-function startOmikuji(){
+function start(){
 
-if(getCookie("omikuji")){
+if(getCookie("result")){
 
-alert("今日はもう引きました")
+showSaved()
+
 return
 
 }
 
-document.getElementById("shake").style.display="block"
+document.getElementById("box").style.display="block"
 
 setTimeout(()=>{
 
-document.getElementById("shake").style.display="none"
+document.getElementById("box").style.display="none"
 document.getElementById("openBtn").classList.remove("hidden")
 
 },2000)
@@ -181,19 +201,62 @@ document.getElementById("openBtn").classList.remove("hidden")
 
 function draw(){
 
+if(drawn)return
+
+drawn=true
+
 const fortune=fortunes[Math.floor(Math.random()*fortunes.length)]
 const judge=judges[Math.floor(Math.random()*judges.length)]
 const adv=advice[Math.floor(Math.random()*advice.length)]
-const rate=Math.floor(Math.random()*60)+40
 
-document.getElementById("result").innerText=fortune
-document.getElementById("rate").innerText="合格期待度 "+rate+"%"
-document.getElementById("judge").innerText="今日の審査員: "+judge
-document.getElementById("advice").innerText="AIアドバイス: "+adv
+const dan=document.getElementById("dan").value
 
-setCookie("omikuji","done")
+let base=50
+
+if(dan==="初段")base=65
+if(dan==="弐段")base=60
+if(dan==="参段")base=55
+if(dan==="四段")base=45
+if(dan==="五段")base=35
+
+const rate=Math.floor(Math.random()*20)+base
+
+const resultData={
+fortune,
+judge,
+adv,
+rate,
+dan
+}
+
+localStorage.setItem("todayResult",JSON.stringify(resultData))
+
+showResult(resultData)
+
+setCookie("result","done")
 
 saveRanking(fortune)
+
+}
+
+function showSaved(){
+
+const data=JSON.parse(localStorage.getItem("todayResult"))
+
+if(!data)return
+
+showResult(data)
+
+}
+
+function showResult(data){
+
+document.getElementById("result").innerText=data.fortune
+document.getElementById("rate").innerText="合格期待度 "+data.rate+"%"
+document.getElementById("judge").innerText="今日の審査員: "+data.judge
+document.getElementById("advice").innerText="AIアドバイス: "+data.adv
+
+document.getElementById("openBtn").disabled=true
 
 }
 
@@ -223,7 +286,7 @@ function showRanking(){
 
 let data=localStorage.getItem("ranking")
 
-if(!data) return
+if(!data)return
 
 data=JSON.parse(data)
 
@@ -254,12 +317,22 @@ html2canvas(document.querySelector("#resultCard")).then(canvas=>{
 
 let link=document.createElement("a")
 
-link.download="omikuji.png"
+link.download="kyudo-omikuji.png"
 link.href=canvas.toDataURL()
 
 link.click()
 
 })
+
+}
+
+function copyText(){
+
+const text="審査員運みくじを引いてみた！"
+
+navigator.clipboard.writeText(text)
+
+alert("Instagram投稿用テキストをコピーしました")
 
 }
 
